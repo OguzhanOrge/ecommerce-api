@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+/**
+ * @OA\Schema(
+ *     schema="Category",
+ *     type="object",
+ *     required={"id","name"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Electronics"),
+ *     @OA\Property(property="description", type="string", example="Electronic items"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+
+class Category extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['name', 'description'];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+}

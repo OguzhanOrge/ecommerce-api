@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
         // Başarılı yanıt makrosu
         Response::macro('success', function ($data = null, $message = 'İşlem başarılı.', $statusCode = 200) {
             return Response::json([
-                'status' => 'success',
+                'success' => true,
                 'message' => $message,
                 'data' => $data,
                 'errors' => [],
@@ -32,9 +32,9 @@ class AppServiceProvider extends ServiceProvider
         // Hata yanıtı makrosu (Manuel hatalar için)
         Response::macro('error', function ($message = 'Bir hata oluştu.', $data = null, $statusCode = 400) {
             return Response::json([
-                'status' => 'error',
+                'success' => false,
                 'message' => $message,
-                'data' => (object) [],
+                'data' => $data,
                 'errors' => $data,
             ], $statusCode);
         });

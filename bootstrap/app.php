@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+        'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
@@ -80,7 +82,15 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 422);
         });
 
-
+        // Diğer tüm genel hatalar (500 vb.)
+        $exceptions->render(function (Throwable $e, Request $request) {
+            return response()->json([
+                'success' => false,
+                'message' => config('app.debug') ? $e->getMessage() : 'Sunucu hatası oluştu.',
+                'data' => (object) [],
+                'errors' => []
+            ], 500);
+        });
 
 
     })->create();

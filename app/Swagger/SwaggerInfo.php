@@ -8,6 +8,7 @@ namespace App\Swagger;
  *   description="Ecommerce API Documentation",
  *   @OA\Contact(email="example@example.com")
  * )
+ *
  */
 final class SwaggerInfo
 {
