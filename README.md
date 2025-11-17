@@ -127,8 +127,8 @@ Aşağıda Postman koleksiyonundaki *tüm endpointlerin minimal listesi* yer alm
 | Method | Endpoint                | Açıklama                  |
 | ------ | ----------------------- | ------------------------- |
 | GET    | `/api/orders/`          | Giriş yapan kullanıcının sipariş detayını getir    |
-| PUT    | `/api/orders/         ` | Sipariş oluştur           |
-| PUT    | `/api/orders/{orderId}` | Sipariş detayını getir    |
+| POST    | `/api/orders/         ` | Sipariş oluştur           |
+| GET    | `/api/orders/{orderId}` | Sipariş detayını getir    |
 | PUT    | `/api/orders/{orderId}` | Sipariş durumunu güncelle |
 
 ---
