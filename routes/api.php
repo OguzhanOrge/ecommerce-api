@@ -75,6 +75,6 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/orders',            [OrderController::class, 'makeOrder']);
     Route::get('/orders',             [OrderController::class, 'index']);
     Route::get('/orders/{orderId}',   [OrderController::class, 'show']);
-    Route::put('/orders/{orderId}',   [OrderController::class, 'update']);
+    Route::put('/orders/{orderId}',   [OrderController::class, 'update'])->middleware('role:admin');
 
 });

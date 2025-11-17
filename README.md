@@ -1,59 +1,236 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+````md
+# Ecommerce API – Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Laravel ile geliştirilmiş basit bir E-Ticaret REST API projesidir.  
+Bu doküman proje kurulumu, veritabanı ayarları, endpoint listesi ve örnek istek/cevapları içerir.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Kurulum
 
-## Learning Laravel
+### Gereksinimler
+- PHP >= 8.x  
+- Composer  
+- Laravel >= 10.x  
+- PostgreSQL  
+- (Opsiyonel) Docker
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Kurulum Adımları
+```bash
+git clone <repo-url>
+cd <proje-klasörü>
+composer install
+cp .env.example .env
+php artisan key:generate
+````
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🗄️ Veritabanı Kurulumu
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### .env Dosyası
 
-### Premium Partners
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ecommerce
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Migrasyon + Seeder
 
-## Contributing
+```bash
+php artisan migrate --seed
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Docker Kullanımı (Varsa)
+(docker-compose dosyasını ve .env dosyasını configure etmelisiniz)
 
-## Code of Conduct
+```bash
+docker-compose up -d
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+# 🔗 API Endpoint Listesi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Aşağıda Postman koleksiyonundaki *tüm endpointlerin minimal listesi* yer almaktadır.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔐 Authentication
+
+| Method | Endpoint        | Açıklama                      |
+| ------ | --------------- | ----------------------------- |
+| POST   | `/api/register` | Yeni kullanıcı oluştur        |
+| POST   | `/api/login`    | Kullanıcı girişi (JWT üretir) |
+| POST   | `/api/logout`   | Çıkış yap                     |
+| POST   | `/api/refresh`  | Token yenile                  |
+
+---
+
+## 🛒 Cart (Sepet)
+
+| Method | Endpoint                        | Açıklama                              |
+| ------ | ------------------------------- | ------------------------------------- |
+| GET    | `/api/cart`                     | Aktif kullanıcının sepetini görüntüle |
+| POST   | `/api/cart/add`                 | Sepete ürün ekle                      |
+| PUT    | `/api/cart/update`              | Sepetteki ürün miktarını güncelle     |
+| DELETE | `/api/cart/remove/{product_id}` | Sepetten ürün sil                     |
+| DELETE | `/api/cart/clear`               | Sepeti tamamen boşalt                 |
+
+---
+
+## 📂 Categories (Kategoriler)
+
+| Method | Endpoint               | Açıklama                 |
+| ------ | ---------------------- | ------------------------ |
+| GET    | `/api/categories`      | Tüm kategorileri listele |
+| GET    | `/api/categories/{id}` | Kategori detay           |
+| POST   | `/api/categories`      | Yeni kategori ekle       |
+| PUT    | `/api/categories/{id}` | Kategori güncelle        |
+| DELETE | `/api/categories/{id}` | Kategori sil             |
+
+---
+
+## 📂 Product(Ürünler)
+
+| Method | Endpoint               | Açıklama                 |
+| ------ | ---------------------- | ------------------------ |
+| GET    | `/api/products`      | Tüm Ürün listele |
+| GET    | `/api/products/{id}` | Ürün detay           |
+| POST   | `/api/products`      | Yeni Ürün ekle       |
+| PUT    | `/api/products/{id}` | Ürün güncelle        |
+| DELETE | `/api/products/{id}` | Ürün sil             |
+
+---
+
+## 📂 User(Kullanıcılar)
+
+| Method | Endpoint               | Açıklama                 |
+| ------ | ---------------------- | ------------------------ |
+| GET    | `/api/users`      | Tüm Kullanıcılar listele |
+| GET    | `/api/users/{id}` | Kullanıcılar detay           |
+| POST   | `/api/users`      | Yeni Kullanıcılar ekle       |
+| PUT    | `/api/users/{id}` | Kullanıcılar güncelle        |
+| DELETE | `/api/users/{id}` | Kullanıcılar sil             |
+
+---
+
+## 🧾 Orders (Siparişler)
+
+| Method | Endpoint                | Açıklama                  |
+| ------ | ----------------------- | ------------------------- |
+| GET    | `/api/orders/`          | Giriş yapan kullanıcının sipariş detayını getir    |
+| PUT    | `/api/orders/         ` | Sipariş oluştur           |
+| PUT    | `/api/orders/{orderId}` | Sipariş detayını getir    |
+| PUT    | `/api/orders/{orderId}` | Sipariş durumunu güncelle |
+
+---
+
+# 📦 Örnek Request / Response
+
+### Login – Request
+
+```json
+{
+  "email": "test@example.com",
+  "password": "password"
+}
+```
+
+### Login – Response
+
+```json
+	
+Response body
+Download
+{
+  "success": true,
+  "message": "İşlem başarılı.",
+  "data": {
+    "headers": {},
+    "original": {
+      "access_token": "xxxx",
+      "token_type": "bearer",
+      "expires_in": 3600
+    },
+    "exception": null
+  },
+  "errors": []
+}
+```
+
+---
+
+### Sepete Ürün Ekle – Request
+
+```json
+{
+  "product_id": 6,
+  "quantity": 2
+}
+```
+
+### Sepete Ürün Ekle – Response
+
+```json
+{
+  "success": true,
+  "message": "Ürün sepete eklendi.",
+  "data": {
+    "cart_id": 1,
+    "product_id": 6,
+    "quantity": 2,
+    "updated_at": "2025-11-17T13:35:58.000000Z",
+    "created_at": "2025-11-17T13:35:58.000000Z",
+    "id": 4
+  },
+  "errors": []
+}
+```
+
+---
+
+## 👤 Test Kullanıcıları
+
+**Admin**
+
+```
+email: admin@test.com
+password: admin123
+```
+
+**User**
+
+```
+email: user@test.com
+password: user123
+```
+
+---
+
+## ▶️ Projeyi Çalıştırma
+
+```bash
+php artisan serve
+```
+
+---
+
+## 📝 Notlar
+
+* Tüm endpointler JSON formatında cevap döner.
+* JWT token gerektiren endpointlerde header kullanılmalıdır:
+
+  ```
+  Authorization: Bearer <token>
+  ```
+
+---
+

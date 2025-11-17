@@ -78,7 +78,7 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $data = $request->validate([
-            'product_id' => 'required|integer',
+            'product_id' => 'required|integer|exists:products,id',
             'quantity' => 'required|integer|min:1'
         ]);
         try {

@@ -123,7 +123,7 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Invalid credentials'], 401);
             }
              event(new UserLoggedIn(auth('api')->user()));
-            return $this->respondWithToken($token);
+            return response()->success($this->respondWithToken($token));
         } catch (\Throwable $th) {
             return response()->error(['success' => false, 'message' => $th->getMessage()], 500);
         }
