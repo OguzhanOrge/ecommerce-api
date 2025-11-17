@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use App\Events\UserLoggedIn;
 
 /**
  * @OA\Tag(
@@ -62,17 +63,21 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|min:8',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
+            'password' => 'required|min:8',
         ]);
+        try {
+            $user = $this->service->createUser($request->all());
 
-        $user = $this->service->createUser($request->all());
+            return response()->json([
+                'message' => 'User registered successfully',
+                'user' => $user,
+            ], 201);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kayıt işlemi sırasında bir hata oluştu'], 500);
+        }
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user,
-        ], 201);
     }
 
     /**
@@ -111,13 +116,18 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        try {
+            $credentials = $request->only('email', 'password');
 
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            if (!$token = auth('api')->attempt($credentials)) {
+                return response()->json(['error' => 'Invalid credentials'], 401);
+            }
+             event(new UserLoggedIn(auth('api')->user()));
+            return $this->respondWithToken($token);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => $th->getMessage()], 500);
         }
 
-        return $this->respondWithToken($token);
     }
 
     /**
@@ -127,7 +137,7 @@ class AuthController extends Controller
      *     tags={"Authentication"},
      *     summary="User logout",
      *     description="Logout user and invalidate token",
-     *     security={{"bearer_token":{}}},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Logged out successfully",
@@ -146,9 +156,14 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
+        try {
+            auth()->logout();
 
-        return response()->json(['message' => 'Logged out successfully']);
+            return response()->json(['message' => 'Logged out successfully']);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Çıkış işlemi sırasında bir hata oluştu'], 500);
+        }
+
     }
 
     /**
@@ -158,7 +173,7 @@ class AuthController extends Controller
      *     tags={"Authentication"},
      *     summary="Refresh authentication token",
      *     description="Refresh the JWT token for continued access",
-     *     security={{"bearer_token":{}}},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Token refreshed successfully",
@@ -179,7 +194,11 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken(auth('api')->refresh());
+        try {
+            return $this->respondWithToken(auth('api')->refresh());
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Token yenilenirken bir hata oluştu'], 500);
+        }
     }
 
     /**

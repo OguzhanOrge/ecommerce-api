@@ -40,12 +40,17 @@ class CartController extends Controller
      */
     public function index()
     {
-        $userId = auth('api')->id();
-        $cart = $this->service->getAllCartByUserId($userId);
-        if (! $cart) {
-            return response()->success([], 'Sepet bulunamadı.');
+        try {
+            $userId = auth('api')->id();
+            $cart = $this->service->getAllCartByUserId($userId);
+            if (! $cart) {
+                return response()->success([], 'Sepet bulunamadı.');
+            }
+            return response()->success($cart, 'Sepet başarıyla getirildi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Sepet getirilirken bir hata oluştu'], 500);
         }
-        return response()->success($cart, 'Sepet başarıyla getirildi.');
+
     }
 
     /**
@@ -76,10 +81,14 @@ class CartController extends Controller
             'product_id' => 'required|integer',
             'quantity' => 'required|integer|min:1'
         ]);
+        try {
+            $userId = auth('api')->id();
+            $item = $this->service->addProductToCart($userId, $data['product_id'], $data['quantity']);
+            return response()->success($item, 'Ürün sepete eklendi.', 201);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürün sepete eklenirken bir hata oluştu'], 500);
+        }
 
-        $userId = auth('api')->id();
-        $item = $this->service->addProductToCart($userId, $data['product_id'], $data['quantity']);
-        return response()->success($item, 'Ürün sepete eklendi.', 201);
     }
 
     /**
@@ -110,13 +119,18 @@ class CartController extends Controller
             'product_id' => 'required|integer',
             'quantity' => 'required|integer|min:1'
         ]);
+        try {
 
-        $userId = auth('api')->id();
-        $updated = $this->service->updateProductCount($userId, $data['product_id'], $data['quantity']);
-        if (! $updated) {
-            return response()->error('Güncelleme başarısız veya ürün bulunamadı.', null, 404);
+            $userId = auth('api')->id();
+            $updated = $this->service->updateProductCount($userId, $data['product_id'], $data['quantity']);
+            if (! $updated) {
+                return response()->error('Güncelleme başarısız veya ürün bulunamadı.', null, 404);
+            }
+            return response()->success($updated, 'Sepet ürünü başarıyla güncellendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Sepet ürünü güncellenirken bir hata oluştu'], 500);
         }
-        return response()->success($updated, 'Sepet ürünü başarıyla güncellendi.');
+
     }
 
     /**
@@ -141,12 +155,17 @@ class CartController extends Controller
      */
     public function remove(string $productId)
     {
-        $userId = auth('api')->id();
-        $removed = $this->service->removeProduct($userId, $productId);
-        if (! $removed) {
-            return response()->error('Ürün bulunamadı veya silinemedi.', null, 404);
+        try {
+            $userId = auth('api')->id();
+            $removed = $this->service->removeProduct($userId, $productId);
+            if (! $removed) {
+                return response()->error('Ürün bulunamadı veya silinemedi.', null, 404);
+            }
+            return response()->success(['product_id' => $productId], 'Ürün sepetten çıkarıldı.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürün sepetten çıkarılırken bir hata oluştu'], 500);
         }
-        return response()->success(['product_id' => $productId], 'Ürün sepetten çıkarıldı.');
+
     }
 
     /**
@@ -165,11 +184,16 @@ class CartController extends Controller
      */
     public function clear()
     {
-        $userId = auth('api')->id();
-        $cleared = $this->service->clearCart($userId);
-        if (! $cleared) {
-            return response()->error('Sepet temizlenemedi.', null, 500);
+        try {
+            $userId = auth('api')->id();
+            $cleared = $this->service->clearCart($userId);
+            if (! $cleared) {
+                return response()->error('Sepet temizlenemedi.', null, 500);
+            }
+            return response()->success(null, 'Sepet başarıyla temizlendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Sepet temizlenirken bir hata oluştu'], 500);
         }
-        return response()->success(null, 'Sepet başarıyla temizlendi.');
+
     }
 }

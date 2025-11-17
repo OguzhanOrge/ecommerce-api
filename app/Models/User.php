@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Observers\UserObserver;
 /**
  * @OA\Schema(
  *     schema="User",
@@ -47,6 +48,11 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
+
+    protected static function booted()
+    {
+        static::observe(UserObserver::class);
+    }
     // JWT IMPLEMENTATION
 
     /**

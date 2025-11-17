@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\ProductService;
+use Illuminate\Routing\Controller;
 
 class ProductController extends Controller
 {
@@ -18,6 +19,12 @@ class ProductController extends Controller
     public function __construct(ProductService $service)
     {
         $this->service = $service;
+
+        $this->middleware(['jwt.auth', 'role:admin'])->only([
+            'store',
+            'update',
+            'destroy'
+        ]);
     }
     /**
      * Display a listing of the resource.
@@ -46,29 +53,34 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = $request->only([
+        try {
+            $filters = $request->only([
             'category_id',
             'search',
             'min_price',
             'max_price',
             'in_stock',
             'sort',
-        ]);
+            ]);
 
-        if ($request->has('in_stock')) {
-            $filters['in_stock'] = $request->boolean('in_stock');
+            if ($request->has('in_stock')) {
+                $filters['in_stock'] = $request->boolean('in_stock');
+            }
+
+            $perPage = (int) $request->query('per_page', 20);
+
+            $with = [];
+            if ($request->has('with')) {
+                $with = array_filter(array_map('trim', explode(',', $request->query('with'))));
+            }
+
+            $products = $this->service->getAllProducts($filters, $perPage, $with);
+
+            return response()->success($products, 'Ürünler başarıyla listelendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürünler getirilirken bir hata oluştu'], 500);
         }
 
-        $perPage = (int) $request->query('per_page', 20);
-
-        $with = [];
-        if ($request->has('with')) {
-            $with = array_filter(array_map('trim', explode(',', $request->query('with'))));
-        }
-
-        $products = $this->service->getAllProducts($filters, $perPage, $with);
-
-        return response()->success($products, 'Ürünler başarıyla listelendi.');
     }
 
     /**
@@ -102,9 +114,13 @@ class ProductController extends Controller
             'category_id' => 'required|integer|exists:categories,id',
             'description' => 'sometimes|string'
         ]);
+        try {
+            $product = $this->service->createProduct($data);
+            return response()->success($product, 'Ürün başarıyla oluşturuldu.', 201);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürün oluşturulurken bir hata oluştu'], 500);
+        }
 
-        $product = $this->service->createProduct($data);
-        return response()->success($product, 'Ürün başarıyla oluşturuldu.', 201);
     }
 
     /**
@@ -121,11 +137,16 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = $this->service->getProductById($id);
-        if (! $product) {
-            return response()->json(['message' => 'Product not found'], 404);
+        try {
+            $product = $this->service->getProductById($id);
+            if (! $product) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
+            return response()->success($product, 'Ürün başarıyla getirildi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürün getirilirken bir hata oluştu'], 500);
         }
-        return response()->success($product, 'Ürün başarıyla getirildi.');
+
     }
 
     /**
@@ -159,12 +180,16 @@ class ProductController extends Controller
             'category_id' => 'sometimes|required|integer|exists:categories,id',
             'description' => 'sometimes|string'
         ]);
-
-        $product = $this->service->updateProduct($id, $data);
-        if (! $product) {
-            return response()->error('Ürün bulunamadı veya güncellenemedi', $product, 404);
+        try {
+            $product = $this->service->updateProduct($id, $data);
+            if (! $product) {
+                return response()->error('Ürün bulunamadı veya güncellenemedi', $product, 404);
+            }
+            return response()->success($product, 'Ürün başarıyla güncellendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürün güncellenirken bir hata oluştu'], 500);
         }
-        return response()->success($product, 'Ürün başarıyla güncellendi.');
+
     }
 
     /**
@@ -181,10 +206,15 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        $deleted = $this->service->deleteProduct($id);
-        if (! $deleted) {
-            return response()->json(['message' => 'Product not found'], 404);
+        try {
+            $deleted = $this->service->deleteProduct($id);
+            if (! $deleted) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
+            return response()->success($id, 'Ürün başarıyla silindi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Ürün silinirken bir hata oluştu'], 500);
         }
-        return response()->success($id, 'Ürün başarıyla silindi.');
+
     }
 }

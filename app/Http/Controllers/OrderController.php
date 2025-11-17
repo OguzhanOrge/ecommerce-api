@@ -77,8 +77,12 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $userId = auth('api')->id();
-        return response()->success($this->service->getOrderByUserId($userId));
+        try {
+            $userId = auth('api')->id();
+            return response()->success($this->service->getOrderByUserId($userId));
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Siparişler getirilirken bir hata oluştu'], 500);
+        }
     }
     /**
      * Create a new order from user's cart
@@ -150,9 +154,13 @@ class OrderController extends Controller
      */
     public function makeOrder(Request $request)
     {
-        $userId = auth('api')->id();
-        $order = $this->service->createOrder($userId);
-        return response()->success($order, 'Order created successfully.');
+        try {
+            $userId = auth('api')->id();
+            $order = $this->service->createOrder($userId);
+            return response()->success($order, 'Order created successfully.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Sipariş oluşturulurken bir hata oluştu'], 500);
+        }
     }
 
     /**
@@ -223,11 +231,68 @@ class OrderController extends Controller
      */
     public function show($orderId)
     {
-        $order = $this->service->getOrderDetailsById($orderId);
-        if (! $order) {
-            return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+        try {
+            $order = $this->service->getOrderDetailsById($orderId);
+            if (! $order) {
+                return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+            }
+
+            return response()->success($order);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Sipariş değerlerinde bir hata oluştu'], 404);
         }
 
-        return response()->success($order);
+    }
+    /**
+     * Get order details by id
+     *
+     * @OA\Put(
+ *     path="/api/orders/{orderId}",
+ *     operationId="updateOrderStatus",
+ *     tags={"Orders"},
+ *     summary="Update order status by ID,status is type of enum('pending', 'paid', 'shipped', 'completed', 'cancelled')",
+ *     description="Updates the status of a specific order.",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(
+ *         name="orderId",
+ *         in="path",
+ *         description="ID of the order to update",
+ *         required=true,
+ *         @OA\Schema(type="integer", example=123)
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="shipped"),
+ *             required={"status"}
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Order status updated successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="id", type="integer"),
+ *             @OA\Property(property="status", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Order not found"
+ *     )
+ * )
+ */
+    public function update(Request $request, $orderId)
+    {
+        try {
+            $updatedOrder = $this->service->updateOrderStatus($orderId, $request->input('status'));
+            if (! $updatedOrder) {
+                return response()->error(['success' => false, 'message' => 'Order not found'], 404);
+            }
+            return response()->success($updatedOrder, 'Order status updated successfully.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => '(status) değeri geçersizdir.'], 500);
+        }
+
+
     }
 }

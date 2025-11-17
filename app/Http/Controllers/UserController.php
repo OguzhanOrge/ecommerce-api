@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use OpenApi\Annotations as OA;
-
+use Illuminate\Routing\Controller;
 /**
  * @OA\Tag(
  *     name="Users",
@@ -19,6 +19,12 @@ class UserController extends Controller
     public function __construct(UserService $service)
     {
         $this->service = $service;
+
+        $this->middleware(['jwt.auth', 'role:admin'])->only([
+            'store',
+            'update',
+            'destroy'
+        ]);
     }
 
     /**
@@ -37,8 +43,13 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = $this->service->getAllUsers();
-        return response()->success($users, 'Kullanıcılar başarıyla listelendi.');
+        try {
+            $users = $this->service->getAllUsers();
+            return response()->success($users, 'Kullanıcılar başarıyla listelendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kullanıcılar getirilirken bir hata oluştu'], 500);
+        }
+
     }
 
     /**
@@ -68,9 +79,13 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
             'role' => 'sometimes|string'
         ]);
+        try {
+            $user = $this->service->createUser($data);
+            return response()->success($user, 'Kullanıcı başarıyla oluşturuldu.', 201);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kullanıcı oluşturulurken bir hata oluştu'], 500);
+        }
 
-        $user = $this->service->createUser($data);
-        return response()->success($user, 'Kullanıcı başarıyla oluşturuldu.', 201);
     }
 
     /**
@@ -92,11 +107,17 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = $this->service->getUserById($id);
-        if (! $user) {
-            return response()->json(['message' => 'User not found'], 404);
+        try {
+            $user = $this->service->getUserById($id);
+            if (! $user) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+
+            return response()->success($user, 'Kullanıcı başarıyla getirildi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kullanıcı getirilirken bir hata oluştu'], 500);
         }
-        return response()->success($user, 'Kullanıcı başarıyla getirildi.');
+
     }
 
     /**
@@ -121,12 +142,16 @@ class UserController extends Controller
             'password' => 'sometimes|string|min:6',
             'role' => 'sometimes|string'
         ]);
-
-        $user = $this->service->updateUser($id, $data);
-        if (! $user) {
-            return response()->error('Kullanıcı bulunamadı veya güncellenemedi', $user, 404);
+        try {
+            $user = $this->service->updateUser($id, $data);
+            if (! $user) {
+                return response()->error('Kullanıcı bulunamadı veya güncellenemedi', $user, 404);
+            }
+            return response()->success(null, 'Kullanıcı başarıyla güncellendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kullanıcı güncellenirken bir hata oluştu'], 500);
         }
-        return response()->success(null, 'Kullanıcı başarıyla güncellendi.');
+
     }
 
     /**
@@ -143,10 +168,15 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        $deleted = $this->service->deleteUser($id);
-        if (! $deleted) {
-            return response()->json(['message' => 'User not found'], 404);
+        try {
+            $deleted = $this->service->deleteUser($id);
+            if (! $deleted) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+            return response()->success($id, 'Kullanıcı başarıyla silindi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kullanıcı silinirken bir hata oluştu'], 500);
         }
-        return response()->success($id, 'Kullanıcı başarıyla silindi.');
+
     }
 }

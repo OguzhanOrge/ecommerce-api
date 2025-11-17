@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\CartItemObserver;
 
 /**
  * @OA\Schema(
@@ -28,6 +29,11 @@ class CartItem extends Model
         'product_id',
         'quantity'
     ];
+
+    protected static function booted()
+    {
+        static::observe(CartItemObserver::class);
+    }
 
     public function cart()
     {

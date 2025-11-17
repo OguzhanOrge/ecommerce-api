@@ -100,4 +100,11 @@ class OrderService
             return null;
         }
     }
+
+    public function updateOrderStatus($orderId, $status)
+    {
+        $order = $this->order->update($orderId,['status' => $status]);
+
+        return $order;
+    }
 }

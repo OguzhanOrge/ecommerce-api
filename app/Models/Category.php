@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\CategoryObserver;
 
 /**
  * @OA\Schema(
@@ -23,6 +24,11 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'description'];
+
+    protected static function booted()
+    {
+        static::observe(CategoryObserver::class);
+    }
 
     public function products()
     {

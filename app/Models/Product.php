@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\ProductObserver;
 
 /**
  * @OA\Schema(
@@ -32,6 +33,11 @@ class Product extends Model
         'stock_quantity',
         'category_id'
     ];
+
+    protected static function booted()
+    {
+        static::observe(ProductObserver::class);
+    }
 
     public function category()
     {

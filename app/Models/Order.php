@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use App\Observers\OrderObserver;
 /**
  * @OA\Schema(
  *     schema="Order",
@@ -28,6 +28,11 @@ class Order extends Model
         'total_amount',
         'status'
     ];
+
+    protected static function booted()
+    {
+        static::observe(OrderObserver::class);
+    }
 
     public function user()
     {

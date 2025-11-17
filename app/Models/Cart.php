@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use App\Observers\CartObserver;
 /**
  * @OA\Schema(
  *     schema="Cart",
@@ -22,6 +22,11 @@ class Cart extends Model
     use HasFactory;
 
     protected $fillable = ['user_id'];
+
+    protected static function booted()
+    {
+        static::observe(CartObserver::class);
+    }
 
     public function user()
     {

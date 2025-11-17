@@ -19,36 +19,62 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/test/{id}', [TestController::class, 'index']);
-Route::apiResource('users', UserController::class);
-Route::apiResource('categories', CategoryController::class);
-// Products resource (correct controller)
-Route::apiResource('products', ProductController::class)->middleware('jwt.auth');
-
-// Cart routes (explicit endpoints) protected by JWT middleware
-Route::group(['prefix' => 'cart', 'middleware' => ['jwt.auth']], function () {
-    Route::get('/', [CartController::class, 'index']);
-    Route::post('/add', [CartController::class, 'add']);
-    Route::put('/update', [CartController::class, 'update']);
-    Route::delete('/remove/{product_id}', [CartController::class, 'remove']);
-    Route::delete('/clear', [CartController::class, 'clear']);
-});
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::group(['middleware' => ['jwt.auth']], function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/login',    [AuthController::class, 'login']);
+
+Route::apiResource('users', UserController::class);
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('products', ProductController::class);
+
+
+/*
+|--------------------------------------------------------------------------
+| JWT Protected Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['jwt.auth'])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/logout',  [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
 
     Route::get('/profile', function () {
         return auth()->user();
     });
 
-    Route::post('/orders', [OrderController::class, 'makeOrder']);
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{orderId}', [OrderController::class, 'show']);
+    /*
+    |--------------------------------------------------------------------------
+    | Cart Endpoints
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('cart')->group(function () {
+        Route::get('/',             [CartController::class, 'index']);
+        Route::post('/add',         [CartController::class, 'add']);
+        Route::put('/update',       [CartController::class, 'update']);
+        Route::delete('/remove/{product_id}', [CartController::class, 'remove']);
+        Route::delete('/clear',     [CartController::class, 'clear']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Orders
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/orders',            [OrderController::class, 'makeOrder']);
+    Route::get('/orders',             [OrderController::class, 'index']);
+    Route::get('/orders/{orderId}',   [OrderController::class, 'show']);
+    Route::put('/orders/{orderId}',   [OrderController::class, 'update']);
+
 });

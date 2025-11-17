@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\OrderItemObserver;
 
 /**
  * @OA\Schema(
@@ -30,6 +31,11 @@ class OrderItem extends Model
         'quantity',
         'price'
     ];
+
+    protected static function booted()
+    {
+        static::observe(OrderItemObserver::class);
+    }
 
     public function order()
     {

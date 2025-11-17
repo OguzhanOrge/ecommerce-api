@@ -5,14 +5,27 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Controller;
 
 class CategoryController extends Controller
 {
+    /**
+     * @OA\Tag(
+     *     name="Categories",
+     *     description="Category management"
+     * )
+     */
     protected CategoryService $service;
 
     public function __construct(CategoryService $service)
     {
         $this->service = $service;
+
+        $this->middleware(['jwt.auth', 'role:admin'])->only([
+            'store',
+            'update',
+            'destroy'
+        ]);
     }
 
     /**
@@ -44,8 +57,13 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = $this->service->getAllCategories();
-        return response()->success($categories, 'Kategoriler başarıyla listelendi.');
+        try {
+            $categories = $this->service->getAllCategories();
+            return response()->success($categories, 'Kategoriler başarıyla listelendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kategoriler getirilirken bir hata oluştu'], 500);
+        }
+
     }
 
     /**
@@ -96,9 +114,13 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'sometimes|string'
         ]);
+        try {
+            $category = $this->service->createCategory($data);
+            return response()->success($category, 'Kategori başarıyla oluşturuldu.', 201);
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kategori oluşturulurken bir hata oluştu'], 500);
+        }
 
-        $category = $this->service->createCategory($data);
-        return response()->success($category, 'Kategori başarıyla oluşturuldu.', 201);
     }
 
     /**
@@ -142,11 +164,16 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-        $category = $this->service->getCategoryById($id);
-        if (! $category) {
-            return response()->json(['message' => 'Category not found'], 404);
+        try {
+            $category = $this->service->getCategoryById($id);
+            if (! $category) {
+                return response()->json(['message' => 'Category not found'], 404);
+            }
+            return response()->success($category, 'Kategori başarıyla getirildi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kategori getirilirken bir hata oluştu'], 500);
         }
-        return response()->success($category, 'Kategori başarıyla getirildi.');
+
     }
 
     /**
@@ -212,12 +239,16 @@ class CategoryController extends Controller
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string'
         ]);
-
-        $category = $this->service->updateCategory($id, $data);
-        if (! $category) {
-            return response()->error('Kategori bulunamadı veya güncellenemedi', $category, 404);
+        try {
+            $category = $this->service->updateCategory($id, $data);
+            if (! $category) {
+                return response()->error('Kategori bulunamadı veya güncellenemedi', $category, 404);
+            }
+            return response()->success($category, 'Kategori başarıyla güncellendi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kategori güncellenirken bir hata oluştu'], 500);
         }
-        return response()->success($category, 'Kategori başarıyla güncellendi.');
+
     }
 
     /**
@@ -260,10 +291,15 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        $deleted = $this->service->deleteCategory($id);
-        if (! $deleted) {
-            return response()->json(['message' => 'Category not found'], 404);
+        try {
+            $deleted = $this->service->deleteCategory($id);
+            if (! $deleted) {
+                return response()->json(['message' => 'Category not found'], 404);
+            }
+            return response()->success($id, 'Kategori başarıyla silindi.');
+        } catch (\Throwable $th) {
+            return response()->error(['success' => false, 'message' => 'Kategori silinirken bir hata oluştu'], 500);
         }
-        return response()->success($id, 'Kategori başarıyla silindi.');
+
     }
 }
