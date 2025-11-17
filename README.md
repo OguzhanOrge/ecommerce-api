@@ -148,8 +148,6 @@ Aşağıda Postman koleksiyonundaki *tüm endpointlerin minimal listesi* yer alm
 
 ```json
 	
-Response body
-Download
 {
   "success": true,
   "message": "İşlem başarılı.",
@@ -197,7 +195,7 @@ Download
 
 ---
 
-## 👤 Test Kullanıcıları
+## 👤 Test Kullanıcıları(dump dosyasını repo içinde bulabilirsiniz)
 
 **Admin**
 
