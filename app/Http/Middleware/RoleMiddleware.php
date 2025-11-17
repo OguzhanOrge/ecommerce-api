@@ -23,7 +23,12 @@ class RoleMiddleware
         }
 
         if (!$user || $user->role !== $role) {
-            return response()->json(['error' => 'Forbidden'], 403);
+            return response()->json([
+                    'success' => false,
+                    'message' => 'Erişim reddedildi. Yetkiniz yok.',
+                    'data' => (object) [],
+                    'errors' => []
+                ], 403);
         }
 
         return $next($request);

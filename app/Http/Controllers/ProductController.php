@@ -40,6 +40,7 @@ class ProductController extends Controller
      *     @OA\Parameter(name="in_stock", in="query", @OA\Schema(type="boolean")),
      *     @OA\Parameter(name="sort", in="query", @OA\Schema(type="string", enum={"price_asc","price_desc","newest"})),
      *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer")),
      *     @OA\Parameter(name="with", in="query", @OA\Schema(type="string"), description="Comma separated relations to eager load"),
      *     @OA\Response(
      *         response=200,
@@ -61,7 +62,8 @@ class ProductController extends Controller
             'max_price',
             'in_stock',
             'sort',
-            ]);
+            'page'
+        ]);
 
             if ($request->has('in_stock')) {
                 $filters['in_stock'] = $request->boolean('in_stock');
@@ -78,7 +80,7 @@ class ProductController extends Controller
 
             return response()->success($products, 'Ürünler başarıyla listelendi.');
         } catch (\Throwable $th) {
-            return response()->error(['success' => false, 'message' => 'Ürünler getirilirken bir hata oluştu'], 500);
+            return response()->error(['success' => false, 'message' => $th->getMessage()], 500);
         }
 
     }

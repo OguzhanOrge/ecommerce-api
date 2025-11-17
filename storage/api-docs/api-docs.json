@@ -1426,6 +1426,13 @@
                         }
                     },
                     {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "name": "with",
                         "in": "query",
                         "description": "Comma separated relations to eager load",
@@ -2077,16 +2084,16 @@
             "description": "Operations related to shopping cart"
         },
         {
+            "name": "Categories",
+            "description": "Category management"
+        },
+        {
             "name": "Products",
             "description": "Product management"
         },
         {
             "name": "Users",
             "description": "Operations about users"
-        },
-        {
-            "name": "Categories",
-            "description": "Categories"
         },
         {
             "name": "Orders",

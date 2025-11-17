@@ -23,7 +23,8 @@ class ProductRepository extends BaseRepository
     public function filter(array $filters = [], array $with = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = $this->model->with($with);
-
+        $page = $filters['page'] ?? null;
+        unset($filters['page']);
         // category_slug -> resolve to category_id(s)
         if (isset($filters['category_slug']) && $filters['category_slug'] !== '') {
             $slug = $filters['category_slug'];
@@ -94,7 +95,9 @@ class ProductRepository extends BaseRepository
             // (it was not part of $filters iteration because we check after, but keep for safety)
         }
 
-        return $query->paginate($perPage);
+
+
+        return $query->paginate($perPage,['*'],'page',$page);
     }
 
 }
